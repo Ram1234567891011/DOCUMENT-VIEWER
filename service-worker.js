@@ -1,5 +1,3 @@
-// Service worker caching logic
-
 const cacheName = 'pro-doc-viewer-v1';
 const filesToCache = [
   './',
