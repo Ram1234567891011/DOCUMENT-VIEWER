@@ -1,89 +1,110 @@
-let db;
+// DOM References
+const authSection = document.getElementById("authSection");
+const appSection = document.getElementById("appSection");
+const loginBtn = document.getElementById("loginBtn");
+const registerLink = document.getElementById("registerLink");
+const fileViewer = document.getElementById("fileViewer");
+const textPreview = document.getElementById("textPreview");
+const langSelect = document.getElementById("langSelect");
 
-// Initialize IndexedDB
-const request = indexedDB.open("DocViewerDB", 1);
+let isRegister = false;
 
-request.onupgradeneeded = function (event) {
-  db = event.target.result;
-  let store = db.createObjectStore("users", { keyPath: "username" });
-  store.createIndex("password", "password", { unique: false });
-};
-
-request.onsuccess = function (event) {
-  db = event.target.result;
-};
-
-request.onerror = function (event) {
-  console.error("DB Error:", event.target.errorCode);
-};
-
-// Handle Register
-document.getElementById("registerBtn").addEventListener("click", () => {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
-
-  if (!user || !pass) return alert("Please enter credentials");
-
-  const tx = db.transaction("users", "readwrite");
-  const store = tx.objectStore("users");
-  const data = { username: user, password: btoa(pass) };
-
-  const addReq = store.add(data);
-
-  addReq.onsuccess = () => {
-    alert("✅ Registered successfully!");
-    document.getElementById("loginForm").reset();
-  };
-
-  addReq.onerror = () => {
-    alert("❌ Username already exists!");
-  };
+// Language Setup
+langSelect.addEventListener("change", (e) => {
+  setLanguage(e.target.value);
 });
 
-// Handle Login
-document.getElementById("loginBtn").addEventListener("click", () => {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
+// Show Register View
+function showRegister() {
+  isRegister = !isRegister;
+  document.getElementById("authTitle").textContent = isRegister ? "Register" : "Login";
+  loginBtn.textContent = isRegister ? "Register" : "Login";
+  registerLink.textContent = isRegister ? "Back to Login" : "Register";
+}
 
-  const tx = db.transaction("users", "readonly");
-  const store = tx.objectStore("users");
-  const getReq = store.get(user);
+// Local Storage Auth
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  if (!user || !pass) return alert("Please fill in all fields");
 
-  getReq.onsuccess = () => {
-    if (!getReq.result) {
-      alert("❌ User not found!");
-    } else if (getReq.result.password === btoa(pass)) {
-      alert("✅ Login successful!");
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("viewerScreen").style.display = "block";
-    } else {
-      alert("❌ Incorrect password!");
-    }
-  };
-});
+  let users = JSON.parse(localStorage.getItem("users") || "{}");
 
-// File Upload + Display PDF/Text
-document.getElementById("fileInput").addEventListener("change", handleFile);
-document.getElementById("dropZone").addEventListener("dragover", (e) => e.preventDefault());
-document.getElementById("dropZone").addEventListener("drop", (e) => {
-  e.preventDefault();
-  if (e.dataTransfer.files.length) handleFile({ target: { files: e.dataTransfer.files } });
-});
-
-function handleFile(e) {
-  const file = e.target.files[0];
-  const reader = new FileReader();
-
-  if (file.type === "application/pdf") {
-    const url = URL.createObjectURL(file);
-    document.getElementById("pdfViewer").src = url;
-    document.getElementById("fileName").innerText = file.name;
+  if (isRegister) {
+    if (users[user]) return alert("Username already exists!");
+    users[user] = pass;
+    localStorage.setItem("users", JSON.stringify(users));
+    alert("Registered! Please login.");
+    showRegister();
   } else {
-    reader.onload = function () {
-      document.getElementById("textContent").innerText = reader.result;
-      document.getElementById("pdfViewer").src = "";
-      document.getElementById("fileName").innerText = file.name;
+    if (users[user] && users[user] === pass) {
+      localStorage.setItem("loggedInUser", user);
+      showApp();
+    } else {
+      alert("Invalid credentials!");
+    }
+  }
+}
+
+// Show Main App
+function showApp() {
+  authSection.classList.add("hidden");
+  appSection.classList.remove("hidden");
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  authSection.classList.remove("hidden");
+  appSection.classList.add("hidden");
+}
+
+// Check Session
+window.onload = () => {
+  if (localStorage.getItem("loggedInUser")) {
+    showApp();
+  }
+};
+
+// File Trigger
+function triggerFile() {
+  document.getElementById("fileInput").click();
+}
+
+// Handle File Input
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === "pdf") {
+    fileViewer.src = URL.createObjectURL(file);
+    fileViewer.classList.remove("hidden");
+    textPreview.classList.add("hidden");
+  } else if (["txt"].includes(ext)) {
+    reader.onload = () => {
+      fileViewer.classList.add("hidden");
+      textPreview.classList.remove("hidden");
+      textPreview.textContent = reader.result;
     };
     reader.readAsText(file);
+  } else {
+    alert("Preview not supported for ." + ext + " yet.");
+  }
+}
+
+// Drag & Drop Support
+function dragOverHandler(e) {
+  e.preventDefault();
+}
+
+function dropHandler(e) {
+  e.preventDefault();
+  const dt = e.dataTransfer;
+  if (dt.files.length > 0) {
+    document.getElementById("fileInput").files = dt.files;
+    handleFile({ target: { files: dt.files } });
   }
 }
