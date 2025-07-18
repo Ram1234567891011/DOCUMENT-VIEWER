@@ -1,0 +1,95 @@
+/* Add your CSS styles here */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background-color: #121212;
+  color: #f0f0f0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.auth-container, .app {
+  background: #1e1e1e;
+  padding: 30px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  text-align: center;
+}
+
+input, button, select {
+  margin: 10px 0;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+button {
+  background: #00bcd4;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #0097a7;
+}
+
+#registerLink {
+  color: #00bcd4;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #292929;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+#uploadArea {
+  border: 2px dashed #444;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#uploadArea:hover {
+  background-color: #1a1a1a;
+}
+
+#viewerContainer {
+  margin-top: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+#textPreview {
+  background: #101010;
+  padding: 20px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  text-align: left;
+  max-height: 600px;
+  overflow-y: auto;
+}
