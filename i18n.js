@@ -1,4 +1,3 @@
-// Language support script
 const translations = {
   en: {
     login: "Login",
